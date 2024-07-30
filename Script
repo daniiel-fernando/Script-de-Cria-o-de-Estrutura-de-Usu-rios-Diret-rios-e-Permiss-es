@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Definindo os usuários e grupos
+USERS=("user1" "user2" "user3")
+GROUPS=("group1" "group2")
+
+# Criando grupos
+for GROUP in "${GROUPS[@]}"; do
+    if ! grep -q "^${GROUP}:" /etc/group; then
+        groupadd $GROUP
+        echo "Grupo $GROUP criado."
+    else
+        echo "Grupo $GROUP já existe."
+    fi
+done
+
+# Criando usuários e adicionando aos grupos
+for USER in "${USERS[@]}"; do
+    if ! id -u $USER > /dev/null 2>&1; then
+        useradd -m -s /bin/bash $USER
+        echo "Usuário $USER criado."
+    else
+        echo "Usuário $USER já existe."
+    fi
+
+    # Adicionando usuários aos grupos
+    usermod -aG group1 $USER
+    usermod -aG group2 $USER
+    echo "Usuário $USER adicionado aos grupos group1 e group2."
+done
+
+# Criando diretórios
+DIRECTORIES=("/home/projects" "/home/shared")
+for DIR in "${DIRECTORIES[@]}"; do
+    if [ ! -d "$DIR" ]; then
+        mkdir -p $DIR
+        echo "Diretório $DIR criado."
+    else
+        echo "Diretório $DIR já existe."
+    fi
+done
+
+# Definindo permissões
+chown :group1 /home/projects
+chmod 770 /home/projects
+
+chown :group2 /home/shared
+chmod 770 /home/shared
+
+echo "Permissões definidas."
+
+echo "Script concluído com sucesso."
